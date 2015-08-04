@@ -233,11 +233,11 @@ void touch()
 {
   if(digitalRead(2) == LOW)
   {
-    delay(1000);
+    delay(100);
     if(digitalRead(2) == LOW)
     {
-    Serial.write('T');
-    Serial.write(0x13);
+    Serial.println('T');
+ //   Serial.write(0x13);
     }
   }
 }
