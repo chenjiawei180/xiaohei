@@ -30,7 +30,9 @@ int currentColor = 0;
 int red, green, blue = 0;
 int number=0;
 int angle=0;
+int speeds=0;
 int end_table=0;
+int a_account=0;
 
 //舵机控制函数
 int MIN_DELAY = 2;
@@ -116,22 +118,28 @@ void loop() // 循环
       }
       if (inChar == ',') 
       {
+          if(a_account == 0)
           number = inString.toInt();
+          if(a_account == 1)
+          angle = inString.toInt();
+          
           inString = "";
+          a_account++;
       }
       if (inChar == 0x0a && end_table ==1) 
       {
-          angle = inString.toInt();
+          speeds = inString.toInt();
           inString = "";   
           
           position_temp[number]=angle;
-          speeds_temp[number]=5;
+          speeds_temp[number]=speeds;
           go(position_temp,speeds_temp);
           usart_table=0;
           usart_val=0;   
           Serial.println(comdata);
           comdata = ""; 
-          end_table=0;       
+          end_table=0;      
+          a_account=0; 
       }
       
     }
