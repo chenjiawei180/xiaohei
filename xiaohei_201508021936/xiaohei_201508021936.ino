@@ -44,6 +44,7 @@ int Speeds[10] = {1, 1, 2, 2, 3, 3, 4, 4 , 5,5};
 int Directions[10] = {1, 1, 1, 1, 1, 1, 1, 1, 1,1};
 int position_temp[10]={0};
 int speeds_temp[10]={0};
+int positions_calculator[10]={0};
 int servo_count=0;
 int cycle_account=0;
 //
@@ -261,13 +262,30 @@ void go(int* positions,int* speeds)
     GoalPositions[j] = positions[j];
     Speeds[j] = speeds[j];
   }
+
+  
+  for(j=0;j<SERVO_NUM;j++)
+  {
+    positions_calculator[j]=Speeds[j]*abs(GoalPositions[j]-Positions[j]);
+  }
+  cycle_account=positions_calculator[0];
+
+  for(j=1;j<SERVO_NUM;j++)
+  {
+    if(cycle_account < positions_calculator[j])
+    {
+      cycle_account=positions_calculator[j];
+    }
+  }
+
+  
   for(j=0;j<SERVO_NUM;j++)
   {
     if(GoalPositions[j]>Positions[j]) Directions[j]=1;
     else if(GoalPositions[j]<Positions[j]) Directions[j]=-1;
     else Directions[j]=0;
   }
-  for(i=0;i<180*5;i++)
+  for(i=0;i<cycle_account;i++)
   {
     delay(MIN_DELAY);
     for(j=0;j<SERVO_NUM;j++)
