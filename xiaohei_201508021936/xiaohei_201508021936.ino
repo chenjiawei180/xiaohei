@@ -45,6 +45,7 @@ int Directions[10] = {1, 1, 1, 1, 1, 1, 1, 1, 1,1};
 int position_temp[10]={0};
 int speeds_temp[10]={0};
 int servo_count=0;
+int cycle_account=0;
 //
  
 //SoftwareSerial mySerial(4,5); // RX, TX
@@ -55,7 +56,7 @@ void setup()
   //打开串行通信，等待端口打开：
   Serial.begin(9600);
   Serial.println("Goodnight moon!");
-  Serial.write(0x13);
+  //Serial.write(0x13);
   strip.begin();
   strip.show(); // Initialize all pixels to 'off'
   attachInterrupt(0, touch, FALLING);
