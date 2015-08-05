@@ -30,7 +30,9 @@ int currentColor = 0;
 int red, green, blue = 0;
 int number=0;
 int angle=0;
+int speeds=0;
 int end_table=0;
+int a_account=0;
 
 //舵机控制函数
 int MIN_DELAY = 2;
@@ -42,7 +44,9 @@ int Speeds[10] = {1, 1, 2, 2, 3, 3, 4, 4 , 5,5};
 int Directions[10] = {1, 1, 1, 1, 1, 1, 1, 1, 1,1};
 int position_temp[10]={0};
 int speeds_temp[10]={0};
+int positions_calculator[10]={0};
 int servo_count=0;
+int cycle_account=0;
 //
  
 //SoftwareSerial mySerial(4,5); // RX, TX
@@ -53,7 +57,7 @@ void setup()
   //打开串行通信，等待端口打开：
   Serial.begin(9600);
   Serial.println("Goodnight moon!");
-  Serial.write(0x13);
+  //Serial.write(0x13);
   strip.begin();
   strip.show(); // Initialize all pixels to 'off'
   attachInterrupt(0, touch, FALLING);
@@ -116,22 +120,28 @@ void loop() // 循环
       }
       if (inChar == ',') 
       {
+          if(a_account == 0)
           number = inString.toInt();
+          if(a_account == 1)
+          angle = inString.toInt();
+          
           inString = "";
+          a_account++;
       }
       if (inChar == 0x0a && end_table ==1) 
       {
-          angle = inString.toInt();
+          speeds = inString.toInt();
           inString = "";   
           
           position_temp[number]=angle;
-          speeds_temp[number]=5;
+          speeds_temp[number]=speeds;
           go(position_temp,speeds_temp);
           usart_table=0;
           usart_val=0;   
           Serial.println(comdata);
           comdata = ""; 
-          end_table=0;       
+          end_table=0;      
+          a_account=0; 
       }
       
     }
@@ -252,11 +262,30 @@ void go(int* positions,int* speeds)
     GoalPositions[j] = positions[j];
     Speeds[j] = speeds[j];
   }
+
+  
   for(j=0;j<SERVO_NUM;j++)
   {
-    Directions[j]=(GoalPositions[j]>Positions[j])?1:-1;
+    positions_calculator[j]=Speeds[j]*abs(GoalPositions[j]-Positions[j]);
   }
-  for(i=0;i<180*5;i++)
+  cycle_account=positions_calculator[0];
+
+  for(j=1;j<SERVO_NUM;j++)
+  {
+    if(cycle_account < positions_calculator[j])
+    {
+      cycle_account=positions_calculator[j];
+    }
+  }
+
+  
+  for(j=0;j<SERVO_NUM;j++)
+  {
+    if(GoalPositions[j]>Positions[j]) Directions[j]=1;
+    else if(GoalPositions[j]<Positions[j]) Directions[j]=-1;
+    else Directions[j]=0;
+  }
+  for(i=0;i<cycle_account;i++)
   {
     delay(MIN_DELAY);
     for(j=0;j<SERVO_NUM;j++)
