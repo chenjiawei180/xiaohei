@@ -262,7 +262,9 @@ void go(int* positions,int* speeds)
   }
   for(j=0;j<SERVO_NUM;j++)
   {
-    Directions[j]=(GoalPositions[j]>Positions[j])?1:-1;
+    if(GoalPositions[j]>Positions[j]) Directions[j]=1;
+    else if(GoalPositions[j]<Positions[j]) Directions[j]=-1;
+    else Directions[j]=0;
   }
   for(i=0;i<180*5;i++)
   {
