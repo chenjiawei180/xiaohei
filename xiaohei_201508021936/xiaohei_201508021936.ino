@@ -21,131 +21,119 @@
 #include <Servo.h>
 #define PIN 17
 
-Servo Servos[9];
-
 Adafruit_NeoPixel strip = Adafruit_NeoPixel(60, PIN, NEO_GRB + NEO_KHZ800);
-String inString = "";    // string to hold input
-String comdata = "";
-int currentColor = 0;
-int red, green, blue = 0;
-int number=0;
-int angle=0;
-int speeds=0;
-int end_table=0;
-int a_account=0;
 
-//舵机控制函数
-int MIN_DELAY = 2;
+
+//舵机控制
+Servo Servos[9];
+int MIN_DELAY = 5;
 int SERVO_NUM = 9;
-int Pins[10] = {4,5, 6, 7, 8, 9, 13, 12, 11, 10};
-int Positions[10] = {90, 90, 90, 90, 90, 90, 90, 90, 90,90};
-int GoalPositions[10] = {90, 90, 90, 90, 90, 90, 90, 90, 90,90 };
-int Speeds[10] = {1, 1, 2, 2, 3, 3, 4, 4 , 5,5};
-int Directions[10] = {1, 1, 1, 1, 1, 1, 1, 1, 1,1};
+int Pins[10] = {4, 5, 6, 7, 8, 9, 13, 12, 11, 10};
+int Positions[10] = {90, 90, 90, 90, 90, 90, 90, 90, 90, 90};
+int GoalPositions[10] = {90, 90, 90, 90, 90, 90, 90, 90, 90, 90 };
+int Speeds[10] = {5, 5, 5, 5, 5, 5, 5, 5 , 5, 5};
+int Directions[10] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
 int position_temp[10]={0};
 int speeds_temp[10]={0};
 int positions_calculator[10]={0};
 int servo_count=0;
 int cycle_account=0;
-//
- 
-//SoftwareSerial mySerial(4,5); // RX, TX
-unsigned char usart_table=0;
-unsigned char usart_val=0; 
+
+
 void setup()  
 {
   //打开串行通信，等待端口打开：
   Serial.begin(9600);
-  Serial.println("Goodnight moon!");
-  //Serial.write(0x13);
-  strip.begin();
-  strip.show(); // Initialize all pixels to 'off'
-  attachInterrupt(0, touch, FALLING);
-  
-  pinMode(2,INPUT);
-  digitalWrite(2,HIGH);
-  
-  //绑定舵机
+  Serial.println("Hello MAIR!");
+
+  //Servo init
   for(int i;i<SERVO_NUM;i++)
   {
      Servos[i].attach(Pins[i]);
      Servos[i].write(Positions[i]);
   }
 
+  //RGB light init
+  strip.begin();
+  strip.show(); // Initialize all pixels to 'off'
 
-  // 设置串口通讯的速率
-//  mySerial.begin(9600);
-//  mySerial.println("Hello, world?");
+  //Touch module
+  attachInterrupt(0, touch, FALLING);
+  pinMode(2,INPUT);
+  digitalWrite(2,HIGH);
 }
- 
+
+int number=0;
+int angle=0;
+int speeds=0;
+int end_table=0;
+int a_account=0;
+String inString = "";    // string to hold input
+String comdata = "";
+int currentColor = 0;
+int red, green, blue = 0;
+unsigned char usart_table=0;
+unsigned char usart_val=0; 
 void loop() // 循环
 { 
-  //test
-
-
-
-
-
-  
-  
   int inChar;
   if (Serial.available())
   { 
-     
-     usart_val=Serial.read();
-     comdata += char(usart_val);
-     if(usart_val == 0x0d) end_table=1;  
+    usart_val=Serial.read();
+    comdata += char(usart_val);
+    //end of command
+    if(usart_val == 0x0d) end_table=1;  
+    
     if (usart_val == 0x41 && usart_table == 0) 
-        {
-          usart_table=1;
-          usart_val=0;
-        }
+    {
+      usart_table=1;
+      usart_val=0;
+    }
+    //C type command
     if (usart_val == 0x42 && usart_table == 0) 
-        {
-          usart_table=2;
-          usart_val=0;
-        }    
+    {
+      usart_table=2;
+      usart_val=0;
+    }    
     if (usart_val == 0x43 && usart_table == 0) 
-        {
-          usart_table=3;
-          usart_val=0;
-        }               
-  
+    {
+      usart_table=3;
+      usart_val=0;
+    }               
+    //A type command
     if (usart_table==1 && usart_val)
     {
       inChar=usart_val;     
       if (isDigit(inChar)) 
       {
-         inString += (char)inChar;
+        inString += (char)inChar;
       }
       if (inChar == ',') 
       {
-          if(a_account == 0)
+        if(a_account == 0)
           number = inString.toInt();
-          if(a_account == 1)
+        if(a_account == 1)
           angle = inString.toInt();
-          
-          inString = "";
-          a_account++;
+        inString = "";
+        a_account++;
       }
       if (inChar == 0x0a && end_table ==1) 
       {
-          speeds = inString.toInt();
-          inString = "";   
-          
-          position_temp[number]=angle;
-          speeds_temp[number]=speeds;
-          go(position_temp,speeds_temp);
-          usart_table=0;
-          usart_val=0;   
-          Serial.println(comdata);
-          comdata = ""; 
-          end_table=0;      
-          a_account=0; 
-      }
-      
+        speeds = inString.toInt();
+        inString = "";   
+        
+        position_temp[number]=angle;
+        speeds_temp[number]=speeds;
+        go(position_temp,speeds_temp);
+        usart_table=0;
+        usart_val=0;   
+        Serial.println(comdata);
+        comdata = ""; 
+        end_table=0;      
+        a_account=0; 
+      } 
     }
-   
+    //B type command
     if (usart_table==2 && usart_val)
     { 
       inChar=usart_val;     
@@ -171,35 +159,33 @@ void loop() // 循环
       }
       if (inChar == 0x0a  && end_table ==1) 
       {
-          //2015/07/26  cjw
-          
-          for(int i;i<SERVO_NUM;i++)
-          {
-             Servos[i].detach();
-          }   
+        //2015/07/26  cjw disattach servo pin for problem of interfacing.
+        for(int i;i<SERVO_NUM;i++)
+        {
+          Servos[i].detach();
+        }   
         
-          blue = inString.toInt();
-          colorWipe(strip.Color(green,red,blue), 50);
-          // clear the string for new input:
-          inString = "";
-          // reset the color counter:
-          currentColor = 0;  
-          usart_table=0;
-          usart_val=0;   
-          Serial.println(comdata);
-         comdata = "";
-         end_table ==0;
-           //2015/07/26  cjw
-           
-           for(int i;i<SERVO_NUM;i++)
-            {
-             Servos[i].attach(Pins[i]);
-            }
-            
+        blue = inString.toInt();
+        colorWipe(strip.Color(green,red,blue), 50);
+        // clear the string for new input:
+        inString = "";
+        // reset the color counter:
+        currentColor = 0;  
+        usart_table=0;
+        usart_val=0;   
+        Serial.println(comdata);
+        comdata = "";
+        end_table ==0;
+        //2015/07/26  cjw reattach servo pin
+        for(int i;i<SERVO_NUM;i++)
+        {
+          Servos[i].attach(Pins[i]);
+        }   
       }  
     }
+    //C type command
     if (usart_table==3 && usart_val)
-    { //C指令
+    {
       inChar=usart_val;     
       if (isDigit(inChar)) 
       {
@@ -207,25 +193,24 @@ void loop() // 循环
       }
       if (inChar == ',') 
       {
-          if(servo_count % 2 == 0)
+        if(servo_count % 2 == 0)
           position_temp[servo_count/2]=inString.toInt();
-          else
+        else
           speeds_temp[servo_count/2]=inString.toInt();
-          inString = "";
-          servo_count++;
+        inString = "";
+        servo_count++;
       }
       if (inChar == 0x0a  && end_table ==1) 
       {
-          speeds_temp[servo_count/2]=inString.toInt();
-          inString = "";
-          servo_count=0;
-          go(position_temp,speeds_temp);
-
-          usart_table=0;
-          usart_val=0;   
-          Serial.println(comdata);
-          comdata = "";        
-          end_table == 0;   
+        speeds_temp[servo_count/2]=inString.toInt();
+        inString = "";
+        servo_count=0;
+        go(position_temp,speeds_temp);
+        usart_table=0;
+        usart_val=0;   
+        Serial.println(comdata);
+        comdata = "";        
+        end_table == 0;   
       }
     }
   }
@@ -233,10 +218,11 @@ void loop() // 循环
 
 
 void colorWipe(uint32_t c, uint8_t wait) {
-  for(uint16_t i=0; i<strip.numPixels(); i++) {
-      strip.setPixelColor(i, c);
-      strip.show();
-      delay(wait);
+  for(uint16_t i=0; i<strip.numPixels(); i++) 
+  {
+    strip.setPixelColor(i, c);
+    strip.show();
+    delay(wait);
   }
 }
 void touch()
@@ -247,7 +233,6 @@ void touch()
     if(digitalRead(2) == LOW)
     {
     Serial.println('T');
- //   Serial.write(0x13);
     }
   }
 }
@@ -263,13 +248,13 @@ void go(int* positions,int* speeds)
     Speeds[j] = speeds[j];
   }
 
-  
+  //calc the biggest cycle account
   for(j=0;j<SERVO_NUM;j++)
   {
     positions_calculator[j]=Speeds[j]*abs(GoalPositions[j]-Positions[j]);
   }
   cycle_account=positions_calculator[0];
-
+  
   for(j=1;j<SERVO_NUM;j++)
   {
     if(cycle_account < positions_calculator[j])
@@ -278,13 +263,14 @@ void go(int* positions,int* speeds)
     }
   }
 
-  
+  //get the servo's turn direction
   for(j=0;j<SERVO_NUM;j++)
   {
     if(GoalPositions[j]>Positions[j]) Directions[j]=1;
     else if(GoalPositions[j]<Positions[j]) Directions[j]=-1;
     else Directions[j]=0;
   }
+  
   for(i=0;i<cycle_account;i++)
   {
     delay(MIN_DELAY);
@@ -304,9 +290,7 @@ void go(int* positions,int* speeds)
 }
 
 //灯的变化
-
 // Fill the dots one after the other with a color
-
 void rainbow(uint8_t wait) {
   uint16_t i, j;
 
@@ -382,5 +366,3 @@ uint32_t Wheel(byte WheelPos) {
    return strip.Color(WheelPos * 3, 255 - WheelPos * 3, 0);
   }
 }
-
-//灯的变化结束
