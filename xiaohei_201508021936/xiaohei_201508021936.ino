@@ -21,7 +21,7 @@
 #include <Servo.h>
 #define PIN 17
 
-Adafruit_NeoPixel strip = Adafruit_NeoPixel(60, PIN, NEO_GRB + NEO_KHZ800);
+Adafruit_NeoPixel strip = Adafruit_NeoPixel(4, PIN, NEO_GRB + NEO_KHZ800);
 
 
 //舵机控制
@@ -66,6 +66,7 @@ void setup()
 int number=0;
 int angle=0;
 int speeds=0;
+int D_number=0;
 int end_table=0;
 int a_account=0;
 String inString = "";    // string to hold input
@@ -99,7 +100,12 @@ void loop() // 循环
     {
       usart_table=3;
       usart_val=0;
-    }               
+    }     
+    if (usart_val == 0x44 && usart_table == 0) 
+    {
+      usart_table=4;
+      usart_val=0;
+    }             
     //A type command
     if (usart_table==1 && usart_val)
     {
@@ -213,6 +219,39 @@ void loop() // 循环
         end_table == 0;   
       }
     }
+    //D type command
+    if (usart_table==4 && usart_val)
+    {
+      inChar=usart_val;     
+      if (isDigit(inChar)) 
+      {
+         inString += (char)inChar;
+      }
+      if (inChar == ',') 
+      {
+        if(servo_count % 3 == 0)
+          D_number = inString.toInt();
+        else if(servo_count % 3 == 1)
+          position_temp[D_number]=inString.toInt();
+        else
+          speeds_temp[D_number]=inString.toInt();
+        inString = "";
+        servo_count++;
+      }
+      if (inChar == 0x0a  && end_table ==1) 
+      {
+        speeds_temp[D_number]=inString.toInt();
+        inString = "";
+        servo_count=0;
+        D_number=0;
+        go(position_temp,speeds_temp);
+        usart_table=0;
+        usart_val=0;   
+        Serial.println("ACK");
+        comdata = "";        
+        end_table == 0;   
+      }
+    }    
   }
 }
 
@@ -221,6 +260,7 @@ void colorWipe(uint32_t c, uint8_t wait) {
   for(uint16_t i=0; i<strip.numPixels(); i++) 
   {
     strip.setPixelColor(i, c);
+    strip.setBrightness(35);
     strip.show();
     delay(wait);
   }
