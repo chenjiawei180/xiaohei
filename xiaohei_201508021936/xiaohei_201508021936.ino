@@ -127,7 +127,7 @@ void loop() // 循环
         go(position_temp,speeds_temp);
         usart_table=0;
         usart_val=0;   
-        Serial.println(comdata);
+        Serial.println("ACK");
         comdata = ""; 
         end_table=0;      
         a_account=0; 
@@ -173,7 +173,7 @@ void loop() // 循环
         currentColor = 0;  
         usart_table=0;
         usart_val=0;   
-        Serial.println(comdata);
+        Serial.println("ACK");
         comdata = "";
         end_table ==0;
         //2015/07/26  cjw reattach servo pin
@@ -208,7 +208,7 @@ void loop() // 循环
         go(position_temp,speeds_temp);
         usart_table=0;
         usart_val=0;   
-        Serial.println(comdata);
+        Serial.println("ACK");
         comdata = "";        
         end_table == 0;   
       }
