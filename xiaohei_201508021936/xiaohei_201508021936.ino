@@ -31,7 +31,7 @@ int SERVO_NUM = 9;
 int Pins[10] = {4, 5, 6, 7, 8, 9, 13, 12, 11, 10};
 int Positions[10] = {90, 90, 90, 90, 90, 90, 90, 90, 90, 90};
 int GoalPositions[10] = {90, 90, 90, 90, 90, 90, 90, 90, 90, 90 };
-int Speeds[10] = {5, 5, 5, 5, 5, 5, 5, 5 , 5, 5};
+int Speeds[10] = {3,3,3,3,3,3,3,3,3,3};
 int Directions[10] = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
 int position_temp[10]={0};
 int speeds_temp[10]={0};
@@ -43,16 +43,17 @@ int cycle_account=0;
 void setup()  
 {
   //打开串行通信，等待端口打开：
-  Serial.begin(9600);
+  Serial.begin(115200);
   Serial.println("Hello MAIR!");
 
   //Servo init
   for(int i;i<SERVO_NUM;i++)
   {
      Servos[i].attach(Pins[i]);
-     Servos[i].write(Positions[i]);
+     Servos[i].write(GoalPositions[i]);
+     delay(200);
   }
-
+  //go(GoalPositions,Speeds);
   //RGB light init
   strip.begin();
   strip.show(); // Initialize all pixels to 'off'
@@ -133,7 +134,7 @@ void loop() // 循环
         go(position_temp,speeds_temp);
         usart_table=0;
         usart_val=0;   
-        Serial.println("ACK");
+        Serial.println(comdata);
         comdata = ""; 
         end_table=0;      
         a_account=0; 
@@ -179,7 +180,7 @@ void loop() // 循环
         currentColor = 0;  
         usart_table=0;
         usart_val=0;   
-        Serial.println("ACK");
+        Serial.println(comdata);
         comdata = "";
         end_table ==0;
         //2015/07/26  cjw reattach servo pin
@@ -214,7 +215,7 @@ void loop() // 循环
         go(position_temp,speeds_temp);
         usart_table=0;
         usart_val=0;   
-        Serial.println("ACK");
+        Serial.println(comdata);
         comdata = "";        
         end_table == 0;   
       }
@@ -247,7 +248,7 @@ void loop() // 循环
         go(position_temp,speeds_temp);
         usart_table=0;
         usart_val=0;   
-        Serial.println("ACK");
+        Serial.println(comdata);
         comdata = "";        
         end_table == 0;   
       }
